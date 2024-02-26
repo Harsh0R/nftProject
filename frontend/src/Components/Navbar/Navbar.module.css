@@ -1,0 +1,179 @@
+/* Style.module.css */
+
+.navbar {
+    position: fixed;
+    top: 0;
+    background-color: #000000;
+    color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: auto;
+    box-shadow: 0 10px 10px rgb(0, 0, 0);
+    z-index: 100;
+  }
+  
+  .navbarLogo {
+    border: 5px solid red;
+    font-size: 24px;
+    font-weight: bold;
+    margin: auto;
+    padding: 0px;
+    width: auto;
+    float: left;
+    border-radius: 10px;
+    object-fit: cover;
+    overflow: hidden;
+  }
+  
+  
+  
+  .listitem {
+    float: right;
+    margin-right: 25px;
+    margin-top: 17px;
+    margin: auto;
+  
+  }
+  
+  .listitem li {
+    float: left;
+    margin: 10px;
+    padding: 1px 5px;
+    list-style: none;
+    font-size: 18px;
+    border-radius: 3px;
+    transition: all .4s ease-in-out;
+  }
+  
+  .listitem li a {
+    text-decoration: none;
+    color: #ffffff;
+  }
+  
+  .listitem li:hover {
+    background-color: rgb(255, 0, 0);
+  }
+  
+  .activeItem {
+    background-color: rgb(255, 0, 0);
+    /* Adjust active item color for dark mode */
+  }
+  
+  .connectBtn {
+    background-color: #ff0000;
+    color: #fff;
+    border: none;
+    margin: 10px;
+    margin-left: 0px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .connectBtn:hover {
+    background-color: #cc0000;
+  }
+  
+  .navbarItem{
+    display: flex;
+  }
+  
+  .acc {
+    margin: auto;
+    margin-right: -5px;
+    background-color: #303438;
+    padding:0px 10px;
+    border-radius: 20px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+  }
+  
+  .account {
+    font-size: 14px;
+  }
+  
+  .copyBtn {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .copyBtn:hover {
+    text-decoration: underline;
+  }
+  
+  .balance {
+    font-size: 14px;
+    color: #fff;
+    /* Adjust text color for dark mode */
+  }
+  
+  @media only screen and (max-width: 768px) {
+    .navbarMenu {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .navbarItem {
+      margin-bottom: 10px;
+      /* Adjust spacing */
+    }
+  
+    .navbarLogo {
+      margin-bottom: 10px;
+      /* Adjust spacing */
+    }
+  }
+  
+  /* Animations */
+  
+  .navbarLink:hover {
+    animation: linkHover 0.2s ease-in-out;
+  }
+  
+  @keyframes linkHover {
+    0% {
+      transform: scale(1);
+    }
+  
+    100% {
+      transform: scale(1.05);
+    }
+  }
+  
+  .activeItem {
+    animation: itemActive 0.2s ease-in-out;
+  }
+  
+  @keyframes itemActive {
+    0% {
+      background-color: #3c4044;
+      /* Adjust active item animation color for dark mode */
+    }
+  
+    100% {
+      background-color: #404448;
+      /* Adjust active item animation color for dark mode */
+    }
+  }
+  
+  .connectBtn:hover {
+    animation: buttonHover 0.2s ease-in-out;
+  }
+  
+  @keyframes buttonHover {
+    0% {
+      transform: scale(1);
+    }
+  
+    100% {
+      transform: scale(1.05);
+    }
+  }
+  
+  
