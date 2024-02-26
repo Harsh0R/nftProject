@@ -139,7 +139,6 @@ export const NFTMarketplaceProvider = ({ children }) => {
     tokenId,
     price,
     quantity,
-    duration
   ) => {
     try {
       const tx = await marketplaceContract.listToken(
@@ -147,7 +146,6 @@ export const NFTMarketplaceProvider = ({ children }) => {
         tokenId,
         ethers.utils.parseEther(price.toString()),
         quantity,
-        duration
       );
       await tx.wait();
       console.log("Token listed successfully.");
