@@ -134,18 +134,13 @@ export const NFTMarketplaceProvider = ({ children }) => {
     }
   };
 
-  const listToken = async (
-    collectionId,
-    tokenId,
-    quantity,
-    price,
-  ) => {
+  const listToken = async (collectionId, tokenId, quantity, price) => {
     try {
       const tx = await marketplaceContract.listToken(
         collectionId,
         tokenId,
         quantity,
-        ethers.utils.parseEther(price.toString()),
+        ethers.utils.parseEther(price.toString())
       );
       await tx.wait();
       console.log("Token listed successfully.");
@@ -154,11 +149,25 @@ export const NFTMarketplaceProvider = ({ children }) => {
     }
   };
 
-  const buyToken = async (listingId, quantity, price) => {
+  const buyToken = async (
+    listingId,
+    quantity,
+    destinationCollection,
+    price
+  ) => {
     try {
-      const tx = await marketplaceContract.buyToken(listingId, quantity, {
-        value: ethers.utils.parseEther(price.toString()),
-      });
+      console.log("Price= === = ", price);
+      const formattedMintFee = ethers.utils.parseEther(price.toString());
+      console.log("mint fee == ", formattedMintFee);
+      const tx = await marketplaceContract.buyToken(
+        listingId,
+        quantity,
+        destinationCollection,
+        {
+          value: formattedMintFee,
+          gasLimit: ethers.utils.hexlify(1000000), // Example gas limit, adjust based on needs
+        }
+      );
       await tx.wait();
       console.log("Token bought successfully.");
     } catch (error) {
@@ -166,14 +175,21 @@ export const NFTMarketplaceProvider = ({ children }) => {
     }
   };
 
-
-
-  const getOwnedTokens = async (collectionAddress, tokenId, curraccount = account) => {
+  const getOwnedTokens = async (
+    collectionAddress,
+    tokenId,
+    curraccount = account
+  ) => {
     try {
-      const tx = await marketplaceContract.getOwnedTokens(collectionAddress, curraccount);
+      const tx = await marketplaceContract.getOwnedTokens(
+        collectionAddress,
+        curraccount
+      );
       console.log("tx == ", tx);
 
-      const tokenIndex = tx[0].findIndex(id => id.toString() === tokenId.toString());
+      const tokenIndex = tx[0].findIndex(
+        (id) => id.toString() === tokenId.toString()
+      );
 
       if (tokenIndex !== -1) {
         return tx[1][tokenIndex].toNumber();
@@ -186,8 +202,16 @@ export const NFTMarketplaceProvider = ({ children }) => {
     }
   };
 
-
-
+  const getAllListedTokens = async () => {
+    try {
+      const tx = await marketplaceContract.getAllListedTokens();
+      console.log("tx == ", tx);
+      return tx;
+    } catch (error) {
+      console.error("Error getting All listed tokens:", error);
+      return 0;
+    }
+  };
 
   return (
     <NFTMarketplaceContext.Provider
@@ -204,6 +228,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
         getTokenIdsOfCollection,
         tokenUri,
         getOwnedTokens,
+        getAllListedTokens,
       }}
     >
       {children}

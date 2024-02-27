@@ -3,6 +3,12 @@ require("@nomicfoundation/hardhat-toolbox");
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: "0.8.24",
+  settings: {
+    optimizer: {
+      enabled: true,
+      runs: 500, // Adjust 'runs' based on how often you expect to call the contract's functions
+    },
+  },
   networks: {
     mumbai: {
       url: "https://rpc-mumbai.maticvigil.com/",

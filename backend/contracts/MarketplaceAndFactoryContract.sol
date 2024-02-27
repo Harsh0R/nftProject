@@ -2,13 +2,13 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./CollectionContract.sol";
-import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
-contract MarketplaceAndFactoryContract is ReentrancyGuard {
-    address[] public collections; // Stores all collection addresses
-    mapping(address => address[]) private _collectionsByOwner; // Maps an owner to their collections
+contract MarketplaceAndFactoryContract is ReentrancyGuard, ERC1155Holder {
+    address[] public collections;
+    mapping(address => address[]) private _collectionsByOwner;
 
     mapping(uint256 => Listing) public listings;
     uint256 private _listingIdCounter = 0;
@@ -20,7 +20,13 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
         uint256 price;
         uint256 quantity;
     }
-
+    struct PurchaseDetail {
+        uint256 listingId;
+        uint256 tokenId;
+        uint256 quantity;
+        uint256 price;
+        uint256 timestamp;
+    }
     event CollectionCreated(
         address indexed owner,
         address collectionAddress,
@@ -41,6 +47,8 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
         uint256 quantity
     );
 
+    mapping(address => PurchaseDetail[]) private purchases;
+
     function createCollection(
         string memory name,
         string memory symbol,
@@ -53,7 +61,7 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
         );
         newCollection.transferOwnership(msg.sender);
         collections.push(address(newCollection));
-        _collectionsByOwner[msg.sender].push(address(newCollection)); // Track collection by owner
+        _collectionsByOwner[msg.sender].push(address(newCollection));
         emit CollectionCreated(
             msg.sender,
             address(newCollection),
@@ -70,12 +78,12 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
     ) public {
         require(quantity > 0, "Quantity must be greater than zero");
         require(price > 0, "Price must be specified");
-
-        // Check if the sender owns the token and has enough quantity to list
         require(
-            IERC1155(collectionAddress).balanceOf(msg.sender, tokenId) >=
-                quantity,
-            "Insufficient token balance to list"
+            IERC1155(collectionAddress).isApprovedForAll(
+                msg.sender,
+                address(this)
+            ),
+            "Marketplace not approved to manage tokens"
         );
 
         _listingIdCounter++;
@@ -96,14 +104,12 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
         );
     }
 
-    function buyToken(uint256 listingId, uint256 quantity)
-        public
-        payable
-        nonReentrant
-    {
+    function buyToken(uint256 listingId, uint256 quantity) public payable {
         Listing storage listing = listings[listingId];
-        require(msg.value >= listing.price * quantity, "Insufficient payment");
+        require(quantity > 0, "Quantity must be positive");
         require(listing.quantity >= quantity, "Not enough tokens available");
+        uint256 totalPrice = listing.price * quantity;
+        require(msg.value >= totalPrice, "Insufficient payment");
 
         IERC1155(listing.collectionAddress).safeTransferFrom(
             listing.seller,
@@ -112,20 +118,35 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
             quantity,
             ""
         );
-        payable(listing.seller).transfer(msg.value);
+        payable(listing.seller).transfer(totalPrice);
         listing.quantity -= quantity;
+        if (msg.value > totalPrice) {
+            payable(msg.sender).transfer(msg.value - totalPrice);
+        }
+
+        purchases[msg.sender].push(
+            PurchaseDetail({
+                listingId: listingId,
+                tokenId: listing.tokenId,
+                quantity: quantity,
+                price: listing.price,
+                timestamp: block.timestamp
+            })
+        );
 
         emit Purchase(listingId, msg.sender, quantity);
     }
 
-    function getOwnedTokens(address collectionAddress, address owner)
-        public
-        view
-        returns (uint256[] memory, uint256[] memory)
-    {
+    function getMyPurchases() public view returns (PurchaseDetail[] memory) {
+        return purchases[msg.sender];
+    }
+
+    function getOwnedTokens(
+        address collectionAddress,
+        address owner
+    ) public view returns (uint256[] memory, uint256[] memory) {
         CollectionContract collection = CollectionContract(collectionAddress);
-        // Assume you have a way to get a list of token IDs for the collection
-        uint256[] memory tokenIds = collection.getTokenIds(); // You need to implement this in CollectionContract
+        uint256[] memory tokenIds = collection.getTokenIds(); 
         uint256[] memory ownedAmounts = new uint256[](tokenIds.length);
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
@@ -135,17 +156,45 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
         return (tokenIds, ownedAmounts);
     }
 
-    // New function to get collections by owner
-    function getCollectionsByOwner(address owner)
-        public
-        view
-        returns (address[] memory)
-    {
+    function getCollectionsByOwner(
+        address owner
+    ) public view returns (address[] memory) {
         return _collectionsByOwner[owner];
     }
 
-    // Optional: Function to get all collections
     function getAllCollections() public view returns (address[] memory) {
         return collections;
+    }
+
+    function getAllListedTokens()
+        public
+        view
+        returns (
+            uint256[] memory listingIds,
+            address[] memory sellers,
+            address[] memory collectionAddresses,
+            uint256[] memory tokenIds,
+            uint256[] memory prices,
+            uint256[] memory quantities
+        )
+    {
+        uint256 totalListings = _listingIdCounter;
+        listingIds = new uint256[](totalListings);
+        sellers = new address[](totalListings);
+        collectionAddresses = new address[](totalListings);
+        tokenIds = new uint256[](totalListings);
+        prices = new uint256[](totalListings);
+        quantities = new uint256[](totalListings);
+
+        for (uint256 i = 0; i < totalListings; i++) {
+            uint256 currentId = i + 1;
+            Listing storage listing = listings[currentId];
+            listingIds[i] = currentId;
+            sellers[i] = listing.seller;
+            collectionAddresses[i] = listing.collectionAddress;
+            tokenIds[i] = listing.tokenId;
+            prices[i] = listing.price;
+            quantities[i] = listing.quantity;
+        }
     }
 }
