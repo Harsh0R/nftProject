@@ -137,15 +137,15 @@ export const NFTMarketplaceProvider = ({ children }) => {
   const listToken = async (
     collectionId,
     tokenId,
-    price,
     quantity,
+    price,
   ) => {
     try {
       const tx = await marketplaceContract.listToken(
         collectionId,
         tokenId,
-        ethers.utils.parseEther(price.toString()),
         quantity,
+        ethers.utils.parseEther(price.toString()),
       );
       await tx.wait();
       console.log("Token listed successfully.");
@@ -166,67 +166,28 @@ export const NFTMarketplaceProvider = ({ children }) => {
     }
   };
 
-  // More functions as per your contract's capabilities can be added here
 
-  // const uploadMetadata = async (metadata) => {
-  //   const { name, description, image, attributes, external_url } = metadata;
 
-  //   // Upload the image file to IPFS
-  //   const imageFormData = new FormData();
-  //   imageFormData.append("file", image);
-  //   const imageUploadResponse = await fetch(
-  //     "https://api.pinata.cloud/pinning/pinFileToIPFS",
-  //     {
-  //       method: "POST",
-  //       headers: {
-  //         Authorization: `Bearer ${PINATA_JWT}`,
-  //       },
-  //       body: imageFormData,
-  //     }
-  //   );
+  const getOwnedTokens = async (collectionAddress, tokenId, curraccount = account) => {
+    try {
+      const tx = await marketplaceContract.getOwnedTokens(collectionAddress, curraccount);
+      console.log("tx == ", tx);
 
-  //   if (!imageUploadResponse.ok) {
-  //     throw new Error("Image upload to IPFS failed.");
-  //   }
+      const tokenIndex = tx[0].findIndex(id => id.toString() === tokenId.toString());
 
-  //   const imageUploadResult = await imageUploadResponse.json();
-  //   const imageUrl = `https://gateway.pinata.cloud/ipfs/${imageUploadResult.IpfsHash}`;
+      if (tokenIndex !== -1) {
+        return tx[1][tokenIndex].toNumber();
+      } else {
+        return 0;
+      }
+    } catch (error) {
+      console.error("Error getting owned tokens:", error);
+      return 0;
+    }
+  };
 
-  //   // Create metadata JSON
-  //   const metadataJson = {
-  //     name,
-  //     description,
-  //     image: imageUrl,
-  //     attributes,
-  //     external_url,
-  //   };
 
-  //   // Convert metadata JSON to Blob for upload
-  //   const metadataBlob = new Blob([JSON.stringify(metadataJson)], {
-  //     type: "application/json",
-  //   });
-  //   const metadataFormData = new FormData();
-  //   metadataFormData.append("file", metadataBlob, "metadata.json");
 
-  //   // Upload the metadata JSON to IPFS
-  //   const metadataUploadResponse = await fetch(
-  //     "https://api.pinata.cloud/pinning/pinFileToIPFS",
-  //     {
-  //       method: "POST",
-  //       headers: {
-  //         Authorization: `Bearer ${PINATA_JWT}`,
-  //       },
-  //       body: metadataFormData,
-  //     }
-  //   );
-
-  //   if (!metadataUploadResponse.ok) {
-  //     throw new Error("Metadata upload to IPFS failed.");
-  //   }
-
-  //   const metadataUploadResult = await metadataUploadResponse.json();
-  //   return `https://gateway.pinata.cloud/ipfs/${metadataUploadResult.IpfsHash}`;
-  // };
 
   return (
     <NFTMarketplaceContext.Provider
@@ -242,8 +203,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
         getTokenURI,
         getTokenIdsOfCollection,
         tokenUri,
-        // uploadMetadata,
-        // Add other values and functions as needed
+        getOwnedTokens,
       }}
     >
       {children}

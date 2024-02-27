@@ -1,16 +1,13 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./Components/Navbar/Navbar";
 import { NFTMarketplaceProvider } from './Context/nftMarketPlace'
 import Home from './Pages/Home/Home';
 import MyAccount from './Pages/MyAccount/MyAccount';
+import ListingToken from './Pages/ListingToken/ListingToken';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
       <NFTMarketplaceProvider>
@@ -19,6 +16,7 @@ function App() {
           <Routes>
             <Route exact path="/" element={<Home />} />
             <Route path="/myAccount" element={<MyAccount />} />
+            <Route path="/listNfts/:selectedCollection/:tokenId" element={<ListingToken />} />
           </Routes>
         </Router>
       </NFTMarketplaceProvider>

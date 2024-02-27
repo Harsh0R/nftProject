@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -78,15 +78,6 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
             "Insufficient token balance to list"
         );
 
-        // Check if the sender is approved to transfer the tokens on behalf of the owner
-        require(
-            IERC1155(collectionAddress).isApprovedForAll(
-                msg.sender,
-                address(this)
-            ),
-            "Marketplace not approved to manage seller's tokens"
-        );
-
         _listingIdCounter++;
         listings[_listingIdCounter] = Listing(
             msg.sender,
@@ -139,7 +130,7 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             ownedAmounts[i] = collection.balanceOf(owner, tokenIds[i]);
-        }  
+        }
 
         return (tokenIds, ownedAmounts);
     }
