@@ -5,40 +5,34 @@ import DisplayNFTs from '../DisplayNFTs/DisplayNFTs';
 function ShowTokensByCollection() {
     const [uniqueCollectionAddresses, setUniqueCollectionAddresses] = useState([]);
     const [selectedCollection, setSelectedCollection] = useState(null);
-    const [collectionTokenIds, setCollectionTokenIds] = useState([]);
     const [collectionAddressesWithTokenIds, setCollectionAddressesWithTokenIds] = useState([]);
-    const { getMyPurchasedTokens} = useContext(NFTMarketplaceContext);
-
-    async function fetchData() {
-        try {
-            const purchasesData = await getMyPurchasedTokens();
-            console.log("Purchases data:", purchasesData);
-            
-            // Extract unique collection addresses
-            const uniqueAddresses = [...new Set(purchasesData.map(purchase => purchase.collectionAddress))];
-            setUniqueCollectionAddresses(uniqueAddresses);
-            
-            // Populate the 2D array with collection addresses and associated token IDs
-            const tokenIdsByCollection = uniqueAddresses.map(address => {
-                return purchasesData
-                .filter(purchase => purchase.collectionAddress === address)
-                .map(purchase => purchase.tokenId.toString());
-            });
-            setCollectionTokenIds(tokenIdsByCollection);
-            
-            // Create another 2D array with collection addresses and associated token IDs
-            const addressesWithTokenIds = uniqueAddresses.map((address, index) => {
-                return [address, collectionTokenIds[index]];
-            });
-            setCollectionAddressesWithTokenIds(addressesWithTokenIds);
-        } catch (error) {
-            console.error("Error fetching purchased tokens:", error);
-        }
-    }
+    const { getMyPurchasedTokens } = useContext(NFTMarketplaceContext);
 
     useEffect(() => {
+        async function fetchData() {
+            try {
+                const purchasesData = await getMyPurchasedTokens();
+                console.log("Purchases data:", purchasesData);
+
+                // Extract unique collection addresses
+                const uniqueAddresses = [...new Set(purchasesData.map(purchase => purchase.collectionAddress))];
+                setUniqueCollectionAddresses(uniqueAddresses);
+
+                // Populate collectionAddressesWithTokenIds with collection addresses and associated token IDs
+                const addressesWithTokenIds = uniqueAddresses.map(address => {
+                    const tokenIds = purchasesData
+                        .filter(purchase => purchase.collectionAddress === address)
+                        .map(purchase => purchase.tokenId.toString());
+                    return { address, tokenIds };
+                });
+                setCollectionAddressesWithTokenIds(addressesWithTokenIds);
+            } catch (error) {
+                console.error("Error fetching purchased tokens:", error);
+            }
+        }
+
         fetchData(); // Fetch data when the component mounts
-    }, [getMyPurchasedTokens, selectedCollection]);
+    }, [getMyPurchasedTokens]);
 
     return (
         <div>
@@ -57,16 +51,19 @@ function ShowTokensByCollection() {
                 <div>
                     <h3>Tokens in Selected Collection : {selectedCollection}</h3>
                     <ul>
-                        {collectionAddressesWithTokenIds.map((addressWithTokenIds, index) => {
-                            const [address, tokenIds] = addressWithTokenIds;
+                        {collectionAddressesWithTokenIds.map(({ address, tokenIds }, index) => {
                             if (address === selectedCollection) {
-                                return tokenIds.map((tokenId, index) => (
-                                    <li key={index}>Token ID: {tokenId}</li>
+                                const uniqueTokenIds = [...new Set(tokenIds)];
+                                return uniqueTokenIds.map((tokenId, tokenIdIndex) => (
+                                    <>
+                                        <li key={tokenIdIndex}>Token ID: {tokenId}</li>
+                                        <li > <DisplayNFTs selectedCollection={selectedCollection} tokenIds={tokenId} ></DisplayNFTs> </li>
+                                    </>
                                 ));
                             }
+                            return null;
                         })}
                     </ul>
-                    {/* You can display more details about the tokens if needed */}
                 </div>
             )}
         </div>
