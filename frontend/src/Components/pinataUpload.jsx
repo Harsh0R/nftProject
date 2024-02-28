@@ -41,7 +41,7 @@ const PinataUpload = () => {
       const resData = await res.json();
       const imageUri = `https://ipfs.io/ipfs/${resData.IpfsHash}`;
       setCid(imageUri);
-      console.log("CID = ", imageUri);
+      // console.log("CID = ", imageUri);
 
       // Optionally, mint a token here
       // await mintToken(tokenName, imageUri, amount);

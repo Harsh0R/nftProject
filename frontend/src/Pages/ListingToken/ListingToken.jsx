@@ -41,7 +41,7 @@ const ListingToken = () => {
     }, [])
 
 
-    console.log("Token data ===",tokenData);
+    // console.log("Token data ===",tokenData);
 
     const handleSubmit = async (event) => {
         event.preventDefault();

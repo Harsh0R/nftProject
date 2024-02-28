@@ -16,7 +16,7 @@ export const connectingWithContract = async () => {
       smartContractABI,
       signer
     );
-    console.log("SC in Api = ", contract);
+    // console.log("SC in Api = ", contract);
     return contract;
   } catch (error) {
     console.log("Error connecting with contract:", error);

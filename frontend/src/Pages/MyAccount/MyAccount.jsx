@@ -1,11 +1,11 @@
 import React from 'react'
 import CreateCollection from '../../Components/CreateCollection/CreateCollection'
-import PinataUpload from '../../Components/MintNfts/MintNFT'
-
+import ShowMyPurchases from '../../Components/ShowMyPurchases/ShowMyPurchases'
 const MyAccount = () => {
   return (
     <div>MyAccount
         <CreateCollection></CreateCollection>
+        <ShowMyPurchases></ShowMyPurchases>
     </div>
   )
 }

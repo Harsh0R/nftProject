@@ -22,6 +22,8 @@ export const NFTMarketplaceProvider = ({ children }) => {
   const [myCollections, setMyCollections] = useState([]); // State to hold user's collections
   const [getTokenIdsOfCollection, setGetTokenIdsOfCollection] = useState([]);
   const [tokenUri, setTokenUri] = useState();
+  const [purchasedCollections, setPurchasedCollections] = useState([]);
+
 
   useEffect(() => {
     const init = async () => {
@@ -41,6 +43,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
         });
 
         fetchMyCollections(signerAddress); // Initial fetch for the current account
+
       } else {
         console.log("Ethereum object not found. Please install MetaMask.");
       }
@@ -53,8 +56,8 @@ export const NFTMarketplaceProvider = ({ children }) => {
     try {
       const tx = await marketplaceContract.createCollection(name, symbol, uri);
       await tx.wait();
-      console.log(`Collection ${name} created successfully.`);
-      console.log(`Collection created successfully.`, tx.hash);
+      // console.log(`Collection ${name} created successfully.`);
+      // console.log(`Collection created successfully.`, tx.hash);
       fetchMyCollections(account); // Refresh collections after creating a new one
       return tx.hash;
     } catch (error) {
@@ -66,19 +69,16 @@ export const NFTMarketplaceProvider = ({ children }) => {
     async (userAccount) => {
       if (!marketplaceContract) return;
       try {
-        // Assuming your contract has a getCollectionsByOwner function
         const collections = await marketplaceContract.getCollectionsByOwner(
           userAccount
         );
         setMyCollections(collections.map((collection) => collection));
-        // console.log("use Acc== :::", collections);
       } catch (error) {
         console.error("Error fetching collections:", error);
       }
     },
     [marketplaceContract, account]
-  ); // Re-run when account changes
-
+  );
   const mintToken = async (collectionAddress, amount, tokenUri) => {
     try {
       const collectionContractInstance = new ethers.Contract(
@@ -86,14 +86,14 @@ export const NFTMarketplaceProvider = ({ children }) => {
         CollectionContractABI,
         signer
       );
-      console.log("accont = :: ==", account);
+      // console.log("accont = :: ==", account);
       const tx = await collectionContractInstance.mintToken(
         account,
         amount,
         tokenUri
       );
       await tx.wait();
-      console.log("Token minted successfully.");
+      // console.log("Token minted successfully.");
     } catch (error) {
       console.error("Error minting token:", error);
     }
@@ -107,11 +107,9 @@ export const NFTMarketplaceProvider = ({ children }) => {
         signer
       );
       const tokenIds = await collectionContractInstance.getTokenIds();
-      // Convert the BigNumber array to a string array for easier handling
       const tokenIdsStr = tokenIds.map((id) => id.toNumber());
-      setGetTokenIdsOfCollection(tokenIdsStr); // Assuming you have a state setter for storing the token IDs
+      setGetTokenIdsOfCollection(tokenIdsStr);
       return getTokenIdsOfCollection;
-      // console.log("Got token IDs of this collection successfully:", tokenIdsStr);
     } catch (error) {
       console.error("Error getting token IDs from collection:", error);
     }
@@ -167,18 +165,27 @@ export const NFTMarketplaceProvider = ({ children }) => {
     }
   };
 
-
-
-
   const listToken = async (
-    collectionId,
+    collectionAddress,
     tokenId,
     quantity,
     price,
   ) => {
     try {
+
+      console.log("Coll Address == ", collectionAddress);;
+      const erc1155Contract = new ethers.Contract(collectionAddress, CollectionContractABI, signer);
+      const isApprovedForAll = await erc1155Contract.isApprovedForAll(account, marketplaceContractAddress);
+
+      if (!isApprovedForAll) {
+        const txApprove = await erc1155Contract.setApprovalForAll(marketplaceContractAddress, true);
+        await txApprove.wait();
+        console.log("Approval granted for marketplace contract to operate on tokens.");
+      }
+
+
       const tx = await marketplaceContract.listToken(
-        collectionId,
+        collectionAddress,
         tokenId,
         quantity,
         ethers.utils.parseEther(price.toString()),
@@ -190,12 +197,15 @@ export const NFTMarketplaceProvider = ({ children }) => {
     }
   };
 
+
   const buyToken = async (listingId, quantity, price) => {
     try {
-      const tx = await marketplaceContract.buyToken(listingId, quantity, {
+      console.log("price == ", price);
+      console.log("price😊 == ", ethers.utils.parseEther(price.toString()));
+      const txBuyToken = await marketplaceContract.buyToken(listingId, quantity, {
         value: ethers.utils.parseEther(price.toString()),
       });
-      await tx.wait();
+      await txBuyToken.wait();
       console.log("Token bought successfully.");
     } catch (error) {
       console.error("Error buying token:", error);
@@ -203,28 +213,35 @@ export const NFTMarketplaceProvider = ({ children }) => {
   };
 
 
-
-
-
-
+  const getMyPurchasedTokens = async (currAccont = account) => {
+    try {
+      const txBuyToken = await marketplaceContract.getMyPurchasedTokens(currAccont);
+      console.log("Token bought successfully.", txBuyToken);
+      return txBuyToken;
+    } catch (error) {
+      console.error("Error buying token😊😊:", error);
+    }
+  };
 
 
   return (
     <NFTMarketplaceContext.Provider
       value={{
         account,
+        myCollections,
+        getTokenIdsOfCollection,
+        tokenUri,
         createCollection,
         mintToken,
         listToken,
         buyToken,
         fetchMyCollections,
-        myCollections,
         getTokenIds,
-        getTokenURI,
-        getTokenIdsOfCollection,
-        tokenUri,
         getOwnedTokens,
-        getAllListedTokens
+        getTokenURI,
+        getAllListedTokens,
+        purchasedCollections,
+        getMyPurchasedTokens,
       }}
     >
       {children}

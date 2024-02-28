@@ -3,10 +3,11 @@ import { NFTMarketplaceContext } from "../../Context/nftMarketPlace";
 import { ethers } from "ethers";
 
 const GetAllListedToken = () => {
-  const { getAllListedTokens, buyToken, account } = useContext(
+  const { getAllListedTokens, buyToken, account , setPurchasedCollections , purchasedCollections , getMyPurchasedTokens} = useContext(
     NFTMarketplaceContext
   );
   const [listings, setListings] = useState([]);
+  const [purchaseCollections, setPurchaseCollections] = useState([])
 
   useEffect(() => {
     const fetchListedTokens = async () => {
@@ -48,35 +49,30 @@ const GetAllListedToken = () => {
     );
   };
 
-  const handleDestinationChange = (index, value) => {
-    setListings((currentListings) =>
-      currentListings.map((listing, idx) =>
-        idx === index ? { ...listing, destinationCollection: value } : listing
-      )
-    );
-  };
-
   const buyThisToken = async (
     listingId,
     inputQuantity,
     pricePerToken,
-    destinationCollection
+    collectionAddress
   ) => {
     try {
-      console.log("dest Address=== ", destinationCollection);
-      const totalCost = (inputQuantity * parseFloat(pricePerToken)).toString();
+      // console.log("Price per token === ", listingId);
+      const totalCost = inputQuantity * parseFloat(pricePerToken);
+      // console.log("Total price=== ", totalCost);
       await buyToken(
         listingId,
         inputQuantity,
-        destinationCollection,
         totalCost
-      ); // Adjust buyToken function to accept destinationCollection
-      console.log("Purchase successful");
+      );
+      console.log("Purchase successful", collectionAddress);
+      setPurchaseCollections(prevState => [...prevState, collectionAddress]);
+      
     } catch (error) {
       console.error("Purchase failed: ", error.message);
     }
   };
-
+  
+  console.log("Buy collection ::=== " , purchasedCollections);
   return (
     <div>
       <h2>Listed Tokens</h2>
@@ -113,14 +109,6 @@ const GetAllListedToken = () => {
               )}{" "}
               ETH
               <br />
-              Destination Collection Address:{" "}
-              <input
-                type="text"
-                value={listing.destinationCollection}
-                onChange={(e) => handleDestinationChange(index, e.target.value)}
-                placeholder="Destination Collection Address"
-              />
-              <br />
               {listing.seller.toLowerCase() !== account.toLowerCase() ? (
                 <button
                   onClick={() =>
@@ -128,7 +116,7 @@ const GetAllListedToken = () => {
                       listing.id,
                       listing.inputQuantity,
                       listing.price,
-                      listing.destinationCollection
+                      listing.collectionAddress,
                     )
                   }
                 >

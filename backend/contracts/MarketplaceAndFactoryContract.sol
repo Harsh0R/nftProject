@@ -13,8 +13,6 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
     mapping(uint256 => Listing) public listings;
     uint256 private _listingIdCounter = 0;
 
-    mapping(address => Purchase[]) public purchases; // Maps address to their purchases
-
     struct Listing {
         address seller;
         address collectionAddress;
@@ -23,14 +21,18 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
         uint256 quantity;
     }
 
-    struct Purchase {
+    struct PurchasedToken {
         address buyer;
         address collectionAddress;
         uint256 tokenId;
-        uint256 quantity;
-        uint256 price;
     }
 
+    mapping(address => PurchasedToken[]) private _purchasedTokensByBuyer;
+
+    event TokenPurchased(
+        address indexed buyer,
+        address indexed collectionAddress
+    );
     event CollectionCreated(
         address indexed owner,
         address collectionAddress,
@@ -45,14 +47,6 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
         uint256 quantity,
         uint256 price
     );
-    event PurchaseEvent(
-        address indexed buyer,
-        address indexed collectionAddress,
-        uint256 indexed tokenId,
-        uint256 quantity,
-        uint256 price
-    );
-
 
     function createCollection(
         string memory name,
@@ -109,15 +103,12 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
         );
     }
 
-    function buyToken(uint256 listingId, uint256 quantity)
-        public
-        payable
-        nonReentrant
-    {
+    function buyToken(uint256 listingId, uint256 quantity) public payable {
         Listing storage listing = listings[listingId];
         require(msg.value >= listing.price * quantity, "Insufficient payment");
         require(listing.quantity >= quantity, "Not enough tokens available");
 
+        // Transfer tokens to the target collection
         IERC1155(listing.collectionAddress).safeTransferFrom(
             listing.seller,
             msg.sender,
@@ -125,28 +116,23 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
             quantity,
             ""
         );
+
+        // Transfer payment to the seller
         payable(listing.seller).transfer(msg.value);
         listing.quantity -= quantity;
+        // Emit event for token purchase
+        emit TokenPurchased(msg.sender, listing.collectionAddress);
 
-        // Store purchase details
-        purchases[msg.sender].push(
-            Purchase(
+        // Store purchased token information
+        _purchasedTokensByBuyer[msg.sender].push(
+            PurchasedToken(
                 msg.sender,
                 listing.collectionAddress,
-                listing.tokenId,
-                quantity,
-                listing.price
+                listing.tokenId
             )
         );
-
-        emit PurchaseEvent(
-            msg.sender,
-            listing.collectionAddress,
-            listing.tokenId,
-            quantity,
-            listing.price
-        );
     }
+
     function getAllListedTokens()
         public
         view
@@ -179,21 +165,21 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
         }
     }
 
-    function getAllPurchases(address buyer) public view returns (Purchase[] memory) {
-        return purchases[buyer];
-    }
-
     // New function to get collections by owner
-    function getCollectionsByOwner(address owner)
-        public
-        view
-        returns (address[] memory)
-    {
+    function getCollectionsByOwner(
+        address owner
+    ) public view returns (address[] memory) {
         return _collectionsByOwner[owner];
     }
 
     // Optional: Function to get all collections
     function getAllCollections() public view returns (address[] memory) {
         return collections;
+    }
+
+    function getMyPurchasedTokens(
+        address buyer
+    ) public view returns (PurchasedToken[] memory) {
+        return _purchasedTokensByBuyer[buyer];
     }
 }
