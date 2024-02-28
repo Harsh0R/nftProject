@@ -26,6 +26,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
   useEffect(() => {
     const init = async () => {
       if (window.ethereum) {
+
         await provider.send("eth_requestAccounts", []);
         const signerAddress = await signer.getAddress();
         setAccount(signerAddress);
@@ -123,75 +124,28 @@ export const NFTMarketplaceProvider = ({ children }) => {
         CollectionContractABI,
         signer
       );
-      // console.log("accont = :: ==", account);
       const tx = await collectionContractInstance.getTokenURI(tokenId);
-      // await tx.wait();
       setTokenUri(tx);
-      // console.log("get token URI of this Collection successfully.", tx);
       return tx;
     } catch (error) {
       console.error("Error to get token URI from collection =:= ", error);
     }
   };
 
-  const listToken = async (collectionId, tokenId, quantity, price) => {
+  const getOwnedTokens = async (collectionAddress, tokenId, curraccount = account) => {
     try {
-      const tx = await marketplaceContract.listToken(
-        collectionId,
-        tokenId,
-        quantity,
-        ethers.utils.parseEther(price.toString())
-      );
-      await tx.wait();
-      console.log("Token listed successfully.");
-    } catch (error) {
-      console.error("Error listing token:", error);
-    }
-  };
-
-  const buyToken = async (
-    listingId,
-    quantity,
-    destinationCollection,
-    price
-  ) => {
-    try {
-      console.log("Price= === = ", price);
-      const formattedMintFee = ethers.utils.parseEther(price.toString());
-      console.log("mint fee == ", formattedMintFee);
-      const tx = await marketplaceContract.buyToken(
-        listingId,
-        quantity,
-        destinationCollection,
-        {
-          value: formattedMintFee,
-          gasLimit: ethers.utils.hexlify(1000000), // Example gas limit, adjust based on needs
-        }
-      );
-      await tx.wait();
-      console.log("Token bought successfully.");
-    } catch (error) {
-      console.error("Error buying token:", error);
-    }
-  };
-
-  const getOwnedTokens = async (
-    collectionAddress,
-    tokenId,
-    curraccount = account
-  ) => {
-    try {
-      const tx = await marketplaceContract.getOwnedTokens(
+      const collectionContractInstance = new ethers.Contract(
         collectionAddress,
-        curraccount
+        CollectionContractABI,
+        signer
       );
-      console.log("tx == ", tx);
+      const tx = await collectionContractInstance.getOwnedTokens(curraccount);
+      console.log("tx == 🧨🎇", tx);
 
-      const tokenIndex = tx[0].findIndex(
-        (id) => id.toString() === tokenId.toString()
-      );
+      const tokenIndex = tx[0].findIndex(id => id.toString() === tokenId.toString());
 
       if (tokenIndex !== -1) {
+        console.log("Your balance ==--== ", tx[1][tokenIndex]);
         return tx[1][tokenIndex].toNumber();
       } else {
         return 0;
@@ -213,6 +167,48 @@ export const NFTMarketplaceProvider = ({ children }) => {
     }
   };
 
+
+
+
+  const listToken = async (
+    collectionId,
+    tokenId,
+    quantity,
+    price,
+  ) => {
+    try {
+      const tx = await marketplaceContract.listToken(
+        collectionId,
+        tokenId,
+        quantity,
+        ethers.utils.parseEther(price.toString()),
+      );
+      await tx.wait();
+      console.log("Token listed successfully.");
+    } catch (error) {
+      console.error("Error listing token:", error);
+    }
+  };
+
+  const buyToken = async (listingId, quantity, price) => {
+    try {
+      const tx = await marketplaceContract.buyToken(listingId, quantity, {
+        value: ethers.utils.parseEther(price.toString()),
+      });
+      await tx.wait();
+      console.log("Token bought successfully.");
+    } catch (error) {
+      console.error("Error buying token:", error);
+    }
+  };
+
+
+
+
+
+
+
+
   return (
     <NFTMarketplaceContext.Provider
       value={{
@@ -228,7 +224,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
         getTokenIdsOfCollection,
         tokenUri,
         getOwnedTokens,
-        getAllListedTokens,
+        getAllListedTokens
       }}
     >
       {children}
