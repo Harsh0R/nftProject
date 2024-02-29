@@ -111,7 +111,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
     [marketplaceContract, account]
   );
 
-  const mintToken = async (collectionAddress, amount, tokenUri) => {
+  const mintToken = async (collectionAddress, amount, tokenUri, royaltyPercentage) => {
     try {
       const collectionContractInstance = new ethers.Contract(
         collectionAddress,
@@ -122,7 +122,9 @@ export const NFTMarketplaceProvider = ({ children }) => {
       const tx = await collectionContractInstance.mintToken(
         account,
         amount,
-        tokenUri
+        tokenUri,
+        account,
+        royaltyPercentage
       );
       await tx.wait();
       // console.log("Token minted successfully.");
@@ -245,6 +247,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
   const getMyPurchasedTokens = async (currAccont = account) => {
     try {
       const txBuyToken = await marketplaceContract.getMyPurchasedTokens(currAccont);
+      // console.log("Buy === " , txBuyToken);
       return txBuyToken;
     } catch (error) {
       console.error("Error buying token😊😊:", error);

@@ -1,7 +1,7 @@
 import nftMarketPlace from "./MarketplaceAndFactoryContract.json"
 import CollectionContract from "./CollectionContract.json"   
 
-export const marketplaceContractAddress = "0x2784ac982C36aF5492e62E8CcEF52eD0e316024C";
+export const marketplaceContractAddress = "0x1bE93A354FfC0a42c5a2B249b123A85C3246d4aa";
 
 export const nftMarketPlaceABI = nftMarketPlace.abi;
 export const CollectionContractABI = CollectionContract.abi

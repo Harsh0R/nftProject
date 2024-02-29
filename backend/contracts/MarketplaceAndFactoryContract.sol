@@ -7,8 +7,8 @@ import "./CollectionContract.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 contract MarketplaceAndFactoryContract is ReentrancyGuard {
-    address[] public collections; // Stores all collection addresses
-    mapping(address => address[]) private _collectionsByOwner; // Maps an owner to their collections
+    address[] public collections; 
+    mapping(address => address[]) private _collectionsByOwner; 
 
     mapping(uint256 => Listing) public listings;
     uint256 private _listingIdCounter = 0;
@@ -60,7 +60,7 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
         );
         newCollection.transferOwnership(msg.sender);
         collections.push(address(newCollection));
-        _collectionsByOwner[msg.sender].push(address(newCollection)); // Track collection by owner
+        _collectionsByOwner[msg.sender].push(address(newCollection)); 
         emit CollectionCreated(
             msg.sender,
             address(newCollection),
@@ -77,8 +77,6 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
     ) public {
         require(quantity > 0, "Quantity must be greater than zero");
         require(price > 0, "Price must be specified");
-
-        // Check if the sender owns the token and has enough quantity to list
         require(
             IERC1155(collectionAddress).balanceOf(msg.sender, tokenId) >=
                 quantity,
@@ -108,7 +106,6 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
         require(msg.value >= listing.price * quantity, "Insufficient payment");
         require(listing.quantity >= quantity, "Not enough tokens available");
 
-        // Transfer tokens to the target collection
         IERC1155(listing.collectionAddress).safeTransferFrom(
             listing.seller,
             msg.sender,
@@ -117,13 +114,21 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
             ""
         );
 
-        // Transfer payment to the seller
-        payable(listing.seller).transfer(msg.value);
+        (address royaltyRecipient, uint256 royaltyAmount) = IERC2981(
+            listing.collectionAddress
+        ).royaltyInfo(listing.tokenId, msg.value);
+        uint256 sellerPayment = msg.value - royaltyAmount;
+
+        if (royaltyAmount > 0) {
+            payable(royaltyRecipient).transfer(royaltyAmount);
+        }
+
+        payable(listing.seller).transfer(sellerPayment);
+
         listing.quantity -= quantity;
-        // Emit event for token purchase
+
         emit TokenPurchased(msg.sender, listing.collectionAddress);
 
-        // Store purchased token information
         _purchasedTokensByBuyer[msg.sender].push(
             PurchasedToken(
                 msg.sender,
@@ -164,19 +169,11 @@ contract MarketplaceAndFactoryContract is ReentrancyGuard {
             quantities[i] = listing.quantity;
         }
     }
-
-    // New function to get collections by owner
     function getCollectionsByOwner(
         address owner
     ) public view returns (address[] memory) {
         return _collectionsByOwner[owner];
     }
-
-    // Optional: Function to get all collections
-    function getAllCollections() public view returns (address[] memory) {
-        return collections;
-    }
-
     function getMyPurchasedTokens(
         address buyer
     ) public view returns (PurchasedToken[] memory) {

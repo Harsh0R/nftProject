@@ -13,7 +13,7 @@ function ShowTokensByCollection() {
         async function fetchData() {
             try {
                 const purchasesData = await getMyPurchasedTokens();
-
+                // console.log("purchasesData == ",purchasesData);
                 // Extract unique collection addresses
                 const uniqueAddresses = [...new Set(purchasesData.map(purchase => purchase.collectionAddress))];
                 setUniqueCollectionAddresses(uniqueAddresses);
@@ -30,7 +30,7 @@ function ShowTokensByCollection() {
                 console.error("Error fetching purchased tokens:", error);
             }
         }
-
+        // console.log("uniqueCollectionAddresses" , uniqueCollectionAddresses);
         fetchData(); // Fetch data when the component mounts
     }, [getMyPurchasedTokens]);
 
