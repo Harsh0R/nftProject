@@ -1,33 +1,41 @@
 import React, { useState } from "react";
-import Style from "./Navbar.module.css";
 import { Link } from "react-router-dom";
+import styles from "./Navbar.module.css";
+import Web3Setup from "../web3setUp/web3setUp";
+
 const Navbar = () => {
   const menuItems = [
     { menu: "Home", link: "/" },
     { menu: "About", link: "/" },
     { menu: "My Account", link: "/myAccount" },
-    { menu: "Setting", link: "/" },
+    { menu: "Settings", link: "/" },
     { menu: "FAQs", link: "/" },
     { menu: "Terms of Use", link: "/" },
   ];
+
   const [active, setActive] = useState(1);
+
   return (
-    <div className={Style.navbar}>
-      <div className={Style.listitem}>
-        {menuItems.map((el, i) => (
+    <nav className={styles.navbar}>
+      <ul className={styles.navbarList}>
+        {menuItems.map((item, index) => (
           <li
-            key={i}
-            className={`${Style.navbarItem} ${
-              active === i + 1 ? Style.activeItem : ""
-            }`}
+            key={index}
+            className={`${styles.navbarItem} ${active === index + 1 ? styles.activeItem : ""
+              }`}
           >
-            <Link to={el.link} onClick={() => setActive(i + 1)}>
-              {el.menu}
+            <Link
+              to={item.link}
+              className={styles.navbarLink}
+              onClick={() => setActive(index + 1)}
+            >
+              {item.menu}
             </Link>
           </li>
         ))}
-      </div>
-    </div>
+        <Web3Setup></Web3Setup>
+      </ul>
+    </nav>
   );
 };
 

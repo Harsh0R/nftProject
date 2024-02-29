@@ -2,16 +2,20 @@ import React, { useState, useContext, useEffect } from "react";
 import { NFTMarketplaceContext } from "../../Context/nftMarketPlace";
 import MintNFT from "../MintNfts/MintNFT";
 import DisplayNFTs from "../DisplayNFTs/DisplayNFTs";
+import styles from "./CreateCollection.module.css";
 
 function CreateCollection() {
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
   const [selectedCollection, setSelectedCollection] = useState(null);
+  const [tokenURIs, setTokenURIs] = useState([]);
   const {
     createCollection,
     fetchMyCollections,
     account,
     myCollections,
+    myCollectionsName,
+    myCollectionsSymbol,
     getTokenIds,
     getTokenURI,
     getTokenIdsOfCollection,
@@ -44,10 +48,15 @@ function CreateCollection() {
     }
   };
 
+  const handleTokenURI = async (tokenId) => {
+    const uri = await getTokenURI(selectedCollection, tokenId);
+    setTokenURIs([...tokenURIs, uri]);
+  };
+
   return (
-    <div>
+    <div className={styles.container1}>
       <h2>Create New Collection</h2>
-      <form onSubmit={handleCreateCollection}>
+      <form onSubmit={handleCreateCollection} className={styles.formcontainer}>
         <div>
           <label htmlFor="name">Collection Name:</label>
           <input
@@ -70,38 +79,50 @@ function CreateCollection() {
             required
           />
         </div>
-        <button type="submit">Create Collection</button>
+        <button type="submit" className={styles.submitButton}>Create Collection</button>
       </form>
-      <div>
+      <div className={styles.collectionsContainer}>
         <h3>My Collections</h3>
-        {myCollections.length > 0 ? (
-          <ul>
-            {myCollections.map((collection, index) => (
-              <li key={index} onClick={() => setSelectedCollection(collection)}>
-                Collection ID: {collection}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No collections found.</p>
-        )}
+        <div className={styles.collectionBoxes}>
+          {myCollections.length > 0 ? (
+            myCollections.map((collection, index) => (
+              <div key={index} onClick={() => setSelectedCollection(collection)} className={styles.collectionBox}>
+                <div className={styles.collectionInfo}>
+                  <div>Collection Name: {myCollectionsName[index]}</div>
+                  <div>Collection Symbol: {myCollectionsSymbol[index]}</div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No collections found.</p>
+          )}
+        </div>
       </div>
       {selectedCollection && <MintNFT collection={selectedCollection} />}
-      <div>
-        <h3>Token URIs in Selected Collection</h3>
-        {getTokenIdsOfCollection.length > 0 &&
-          getTokenIdsOfCollection.map((tokenId, index) => (
-            <div
-              key={index}
-              onClick={() => getTokenURI(selectedCollection, tokenId)}
-            >
-              <DisplayNFTs
-                selectedCollection={selectedCollection}
-                tokenIds={tokenId}
-              />
-            </div>
+      <div className={styles.tokenuriscontainer}>
+        <h3>Token in Selected Collection</h3>
+        <div className={styles.tokenBoxContainer}>
+          {getTokenIdsOfCollection.length > 0 &&
+            getTokenIdsOfCollection.map((tokenId, index) => (
+              <div
+                key={index}
+                className={styles.tokenBox}
+                onClick={() => handleTokenURI(tokenId)}
+              >
+                <DisplayNFTs
+                  selectedCollection={selectedCollection}
+                  tokenIds={tokenId}
+                />
+              </div>
+            ))
+
+          }
+          {tokenURIs.map((uri, index) => (
+            <div key={index} className={styles.tokenBox}>{uri}</div>
           ))}
+        </div>
       </div>
+
     </div>
   );
 }

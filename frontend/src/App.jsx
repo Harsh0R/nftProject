@@ -6,10 +6,11 @@ import { NFTMarketplaceProvider } from './Context/nftMarketPlace'
 import Home from './Pages/Home/Home';
 import MyAccount from './Pages/MyAccount/MyAccount';
 import ListingToken from './Pages/ListingToken/ListingToken';
+import "./App.css"
 
 function App() {
   return (
-    <>
+    <div className="container">
       <NFTMarketplaceProvider>
         <Router>
           <Navbar />
@@ -20,7 +21,7 @@ function App() {
           </Routes>
         </Router>
       </NFTMarketplaceProvider>
-    </>
+    </div>
   )
 }
 

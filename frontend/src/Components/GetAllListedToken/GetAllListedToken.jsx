@@ -1,13 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
 import { NFTMarketplaceContext } from "../../Context/nftMarketPlace";
+import Style from "./GetAllListedToken.module.css";
 import { ethers } from "ethers";
+import DisplayNFTs from "../DisplayNFTs/DisplayNFTs";
+import GetOnlyPic from "../GetOnlyPic/GetOnlyPic";
 
 const GetAllListedToken = () => {
-  const { getAllListedTokens, buyToken, account , setPurchasedCollections , purchasedCollections , getMyPurchasedTokens} = useContext(
+  const { getAllListedTokens, buyToken, account, purchasedCollections } = useContext(
     NFTMarketplaceContext
   );
   const [listings, setListings] = useState([]);
-  const [purchaseCollections, setPurchaseCollections] = useState([])
+  const [purchaseCollections, setPurchaseCollections] = useState([]);
 
   useEffect(() => {
     const fetchListedTokens = async () => {
@@ -29,8 +32,8 @@ const GetAllListedToken = () => {
           tokenId: tokenIds[index].toString(),
           price: ethers.utils.formatUnits(prices[index], "ether"),
           quantity: quantities[index].toString(),
-          inputQuantity: 1, // Initial input quantity set to 1
-          destinationCollection: "", // Add a field for destination collection address
+          inputQuantity: 1,
+          destinationCollection: "",
         }));
         setListings(formattedListings);
       }
@@ -43,7 +46,7 @@ const GetAllListedToken = () => {
     setListings((currentListings) =>
       currentListings.map((listing, idx) =>
         idx === index
-          ? { ...listing, inputQuantity: Math.max(1, value) }
+          ? { ...listing, inputQuantity: Math.min(Math.max(1, value), listing.quantity) }
           : listing
       )
     );
@@ -56,39 +59,39 @@ const GetAllListedToken = () => {
     collectionAddress
   ) => {
     try {
-      // console.log("Price per token === ", listingId);
       const totalCost = inputQuantity * parseFloat(pricePerToken);
-      // console.log("Total price=== ", totalCost);
       await buyToken(
         listingId,
         inputQuantity,
         totalCost
       );
-      console.log("Purchase successful", collectionAddress);
       setPurchaseCollections(prevState => [...prevState, collectionAddress]);
-      
     } catch (error) {
       console.error("Purchase failed: ", error.message);
     }
   };
-  
-  console.log("Buy collection ::=== " , purchasedCollections);
+
   return (
-    <div>
-      <h2>Listed Tokens</h2>
+    <div className={Style.container}>
+      <h2 className={Style.title}>Listed Tokens</h2>
       {listings.length > 0 ? (
         <ul>
           {listings.map((listing, index) => (
-            <li key={listing.id}>
-              List Id = {listing.id}
+            <li key={listing.id} className={Style.listItem}>
+              <span className={Style.listId}>List Id:</span> {listing.id}
               <br />
               Seller: {listing.seller}
               <br />
               Collection Address: {listing.collectionAddress}
               <br />
+              <GetOnlyPic
+                selectedCollection={listing.collectionAddress}
+                tokenIds={listing.tokenId}
+              />
+              <br />
               Token ID: {listing.tokenId}
               <br />
-              Price: {listing.price} ETH
+              Price: <span className={Style.price}>{listing.price} ETH</span>
               <br />
               Available Quantity: {listing.quantity}
               <br />
@@ -99,6 +102,7 @@ const GetAllListedToken = () => {
                 onChange={(e) =>
                   handleQuantityChange(index, parseInt(e.target.value, 10))
                 }
+                className={Style.quantityInput}
                 min="1"
                 max={listing.quantity}
               />
@@ -119,12 +123,14 @@ const GetAllListedToken = () => {
                       listing.collectionAddress,
                     )
                   }
+                  className={Style.button}
                 >
                   Buy This Token
                 </button>
               ) : (
-                <button disabled>You are the seller</button>
+                <button disabled className={Style.disabledButton}>You are the seller</button>
               )}
+
             </li>
           ))}
         </ul>

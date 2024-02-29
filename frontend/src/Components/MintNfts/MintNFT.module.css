@@ -1,0 +1,67 @@
+/* MintNFT.module.css */
+
+.container {
+    padding: 20px;
+    background-color: #000000;
+    color: #ffffff;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.title {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #2b2b2b;
+    color: #ffffff;
+}
+
+.input::placeholder {
+    color: #cccccc;
+}
+
+.fileInput {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #2b2b2b;
+    color: #ffffff;
+}
+
+.fileInput:focus {
+    outline: none;
+}
+
+.button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+.metadataUrl {
+    margin-top: 10px;
+}
+
+@media screen and (min-width: 768px) {
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+}

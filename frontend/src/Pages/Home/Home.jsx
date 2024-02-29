@@ -4,10 +4,8 @@ import GetAllListedToken from '../../Components/GetAllListedToken/GetAllListedTo
 
 const Home = () => {
   return (
-    <div>Home
-        <Web3Setup></Web3Setup>
+    <div>
         <GetAllListedToken></GetAllListedToken>
-
     </div>
   )
 }

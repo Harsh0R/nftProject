@@ -1,0 +1,52 @@
+/* ShowMyPurchases.module.css */
+
+.container {
+    padding: 20px;
+    background-color: #000000;
+    border-radius: 8px;
+    /* border: 3px solid wheat; */
+    margin-bottom: 20px;
+}
+
+.title {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.collectionList {
+    list-style-type: none;
+    padding: 0;
+}
+
+.collectionListItem {
+    width: fit-content;
+    cursor: pointer;
+    background-color: #000000;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.collectionListItem:hover {
+    color: black;
+    background-color: #f9f9f9;
+}
+
+
+.tokensList {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap; /* Enable wrapping */
+}
+
+.tokenItem {
+    margin-right: 10px; /* Add some margin between tokens */
+    background-color: #000000;
+    /* border: 1px solid #cccccc; */
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+

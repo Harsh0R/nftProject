@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { NFTMarketplaceContext } from '../../Context/nftMarketPlace';
 import DisplayNFTs from '../DisplayNFTs/DisplayNFTs';
+import styles from "./ShowMyPurchases.module.css";
 
 function ShowTokensByCollection() {
     const [uniqueCollectionAddresses, setUniqueCollectionAddresses] = useState([]);
@@ -12,7 +13,6 @@ function ShowTokensByCollection() {
         async function fetchData() {
             try {
                 const purchasesData = await getMyPurchasedTokens();
-                console.log("Purchases data:", purchasesData);
 
                 // Extract unique collection addresses
                 const uniqueAddresses = [...new Set(purchasesData.map(purchase => purchase.collectionAddress))];
@@ -35,13 +35,13 @@ function ShowTokensByCollection() {
     }, [getMyPurchasedTokens]);
 
     return (
-        <div>
-            <h2>Show Tokens By Collection</h2>
+        <div className={styles.container}>
+            <h2 className={styles.title}>Show Tokens By Collection</h2>
             <div>
-                <h3>Unique Collection Addresses</h3>
-                <ul>
+                <h3>Purchase Collection Addresses</h3>
+                <ul className={styles.collectionList}>
                     {uniqueCollectionAddresses.map((address, index) => (
-                        <li key={index} onClick={() => setSelectedCollection(address)}>
+                        <li key={index} className={styles.collectionListItem} onClick={() => setSelectedCollection(address)}>
                             Collection Address: {address}
                         </li>
                     ))}
@@ -50,15 +50,14 @@ function ShowTokensByCollection() {
             {selectedCollection && (
                 <div>
                     <h3>Tokens in Selected Collection : {selectedCollection}</h3>
-                    <ul>
+                    <ul className={styles.tokensList}>
                         {collectionAddressesWithTokenIds.map(({ address, tokenIds }, index) => {
                             if (address === selectedCollection) {
                                 const uniqueTokenIds = [...new Set(tokenIds)];
                                 return uniqueTokenIds.map((tokenId, tokenIdIndex) => (
-                                    <>
-                                        <li key={tokenIdIndex}>Token ID: {tokenId}</li>
-                                        <li > <DisplayNFTs selectedCollection={selectedCollection} tokenIds={tokenId} ></DisplayNFTs> </li>
-                                    </>
+                                    <li key={tokenIdIndex} className={styles.tokenItem}>
+                                        <DisplayNFTs selectedCollection={selectedCollection} tokenIds={tokenId} />
+                                    </li>
                                 ));
                             }
                             return null;

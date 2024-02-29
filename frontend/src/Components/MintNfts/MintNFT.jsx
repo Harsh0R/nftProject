@@ -1,10 +1,11 @@
 import React, { useState, useContext } from "react";
 import { NFTMarketplaceContext } from "../../Context/nftMarketPlace";
+import Style from "./MintNFT.module.css"
 import { ethers } from "ethers";
 
 const MintNFT = ({ collection }) => {
 
-    // console.log("Collection = ",collection);
+  // console.log("Collection = ",collection);
   const [selectedFile, setSelectedFile] = useState();
   const [jsonUri, setJsonUri] = useState(""); // To store JSON metadata URI after upload
   const [tokenName, setTokenName] = useState(""); // To specify a unique name for the token
@@ -79,7 +80,7 @@ const MintNFT = ({ collection }) => {
       return;
     }
     try {
-      await mintToken(collection, amount,jsonUri);
+      await mintToken(collection, amount, jsonUri);
       console.log("NFT minted successfully.");
     } catch (error) {
       console.error("Error during NFT minting:", error);
@@ -87,20 +88,26 @@ const MintNFT = ({ collection }) => {
   };
 
   return (
-    <div>
-      <h2>{collection}</h2>
-      <input type="file" onChange={changeHandler} />
+    <div className={Style.container}>
+      <h2 className={Style.title}>{collection}</h2>
+      <input
+        type="file"
+        className={Style.fileInput}
+        onChange={changeHandler}
+      />
       <input
         type="text"
         placeholder="Token Name"
         value={tokenName}
         onChange={(e) => setTokenName(e.target.value)}
+        className={Style.input}
       />
       <input
         type="text"
         placeholder="Token Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
+        className={Style.input}
       />
       <input
         type="number"
@@ -108,14 +115,24 @@ const MintNFT = ({ collection }) => {
         min="1"
         value={amount}
         onChange={(e) => setAmount(parseInt(e.target.value, 10))}
+        className={Style.input}
       />
-      <button onClick={handleSubmission}>Upload Files</button>
+      <button onClick={handleSubmission} className={Style.button}>
+        Upload Files
+      </button>
       {isReadyToMint && (
         <>
-          <button onClick={handleMint}>Mint NFT</button>
-          <div>
+          <button onClick={handleMint} className={Style.button}>
+            Mint NFT
+          </button>
+          <div className={Style.metadataUrl}>
             Metadata IPFS URL:{" "}
-            <a href={jsonUri} target="_blank" rel="noopener noreferrer">
+            <a
+              href={jsonUri}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={Style.link}
+            >
               {jsonUri}
             </a>
           </div>
