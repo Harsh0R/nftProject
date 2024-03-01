@@ -55,6 +55,7 @@ const GetOnlyPic = ({ selectedCollection, tokenIds }) => {
     {tokenData && (
       <>
         <img
+        width={350}
           src={tokenData.image}
           alt="NFT"
         />
